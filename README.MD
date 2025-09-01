@@ -1,5 +1,3 @@
-// File: README.md
-
 # resumex - Universal Resumable Command Wrapper
 
 A CLI tool that allows you to run any command with state management and resume capability if interrupted.
