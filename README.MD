@@ -14,7 +14,7 @@ A CLI tool that allows you to run any command with state management and resume c
 
 ```bash
 # Clone and build
-git clone <your-repo-url>
+git clone https://github.com/Aliasgar-Jiwani/resumex.git
 cd resumex
 go build -o resumex
 sudo mv resumex /usr/local/bin/
