@@ -49,7 +49,7 @@ func runCommand(cmd *cobra.Command, args []string) {
 
 	// Update session status
 	if exitCode == 0 {
-		sess.MarkAsCompleted()
+		sess.MarkAsCompleted(exitCode)
 	} else {
 		sess.MarkAsInterrupted()
 	}

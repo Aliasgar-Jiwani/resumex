@@ -65,7 +65,7 @@ func resumeCommand(cmd *cobra.Command, args []string) {
 
 	// Update session status
 	if exitCode == 0 {
-		sess.MarkAsCompleted()
+		sess.MarkAsCompleted(exitCode)
 	} else {
 		sess.MarkAsInterrupted()
 	}
@@ -80,7 +80,7 @@ func parseCommand(cmdStr string) []string {
 	parts := []string{}
 	current := ""
 	inQuotes := false
-	
+
 	for i, char := range cmdStr {
 		if char == '"' || char == '\'' {
 			inQuotes = !inQuotes
@@ -92,12 +92,12 @@ func parseCommand(cmdStr string) []string {
 		} else {
 			current += string(char)
 		}
-		
+
 		if i == len(cmdStr)-1 && current != "" {
 			parts = append(parts, current)
 		}
 	}
-	
+
 	return parts
 }
 
