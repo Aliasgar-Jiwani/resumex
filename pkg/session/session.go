@@ -29,21 +29,27 @@ type Session struct {
 	LogFile    string    `json:"log_file"`
 }
 
+// Create a new session
 func NewSession(command, workingDir string) *Session {
 	id := uuid.New().String()
-	
+
 	configDir, err := getConfigDir()
 	if err != nil {
 		panic(fmt.Sprintf("Cannot get config directory: %v", err))
 	}
 
-	logFile := fmt.Sprintf("%s/logs/%s.log", configDir, id)
-	
-	// Ensure logs directory exists
-	logsDir := filepath.Dir(logFile)
+	// Ensure sessions and logs directories exist
+	logsDir := filepath.Join(configDir, "logs")
 	if err := os.MkdirAll(logsDir, 0755); err != nil {
 		panic(fmt.Sprintf("Cannot create logs directory: %v", err))
 	}
+
+	sessionsDir := filepath.Join(configDir, "sessions")
+	if err := os.MkdirAll(sessionsDir, 0755); err != nil {
+		panic(fmt.Sprintf("Cannot create sessions directory: %v", err))
+	}
+
+	logFile := filepath.Join(logsDir, id+".log")
 
 	return &Session{
 		ID:         id,
@@ -55,14 +61,19 @@ func NewSession(command, workingDir string) *Session {
 	}
 }
 
+// Save session state to disk
 func (s *Session) Save() error {
 	configDir, err := getConfigDir()
 	if err != nil {
 		return err
 	}
 
-	sessionsDir := fmt.Sprintf("%s/sessions", configDir)
-	sessionFile := fmt.Sprintf("%s/%s.json", sessionsDir, s.ID)
+	sessionsDir := filepath.Join(configDir, "sessions")
+	if err := os.MkdirAll(sessionsDir, 0755); err != nil {
+		return err
+	}
+
+	sessionFile := filepath.Join(sessionsDir, s.ID+".json")
 
 	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
@@ -72,13 +83,14 @@ func (s *Session) Save() error {
 	return os.WriteFile(sessionFile, data, 0644)
 }
 
+// Load a session by ID
 func LoadSession(sessionID string) (*Session, error) {
 	configDir, err := getConfigDir()
 	if err != nil {
 		return nil, err
 	}
 
-	sessionFile := fmt.Sprintf("%s/sessions/%s.json", configDir, sessionID)
+	sessionFile := filepath.Join(configDir, "sessions", sessionID+".json")
 
 	data, err := os.ReadFile(sessionFile)
 	if err != nil {
@@ -93,19 +105,21 @@ func LoadSession(sessionID string) (*Session, error) {
 	return &sess, nil
 }
 
+// Delete session by ID
 func DeleteSession(sessionID string) error {
 	configDir, err := getConfigDir()
 	if err != nil {
 		return err
 	}
 
-	sessionFile := fmt.Sprintf("%s/sessions/%s.json", configDir, sessionID)
+	sessionFile := filepath.Join(configDir, "sessions", sessionID+".json")
 	return os.Remove(sessionFile)
 }
 
-func (s *Session) MarkAsCompleted() {
+// Status update helpers
+func (s *Session) MarkAsCompleted(exitCode int) {
 	s.Status = StatusCompleted
-	s.ExitCode = 0
+	s.ExitCode = exitCode
 	s.EndTime = time.Now()
 }
 
@@ -118,10 +132,11 @@ func (s *Session) MarkAsRunning() {
 	s.Status = StatusRunning
 }
 
+// Get ~/.resumex path
 func getConfigDir() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("%s/.resumex", home), nil
+	return filepath.Join(home, ".resumex"), nil
 }
