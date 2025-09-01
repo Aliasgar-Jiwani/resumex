@@ -1,20 +1,3 @@
-package main
-
-import (
-	"fmt"
-	"os"
-
-	"github.com/Aliasgar-Jiwani/resumex/cmd"
-)
-
-func main() {
-	if err := cmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-}
-
-// File: go.mod
 module github.com/Aliasgar-Jiwani/resumex
 
 go 1.21
@@ -29,7 +12,9 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 )
 
+// ===============================
 // File: cmd/root.go
+// ===============================
 package cmd
 
 import (
