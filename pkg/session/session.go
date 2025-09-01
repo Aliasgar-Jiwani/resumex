@@ -33,7 +33,7 @@ type Session struct {
 func NewSession(command, workingDir string) *Session {
 	id := uuid.New().String()
 
-	configDir, err := getConfigDir()
+	configDir, err := GetConfigDir()
 	if err != nil {
 		panic(fmt.Sprintf("Cannot get config directory: %v", err))
 	}
@@ -63,7 +63,7 @@ func NewSession(command, workingDir string) *Session {
 
 // Save session state to disk
 func (s *Session) Save() error {
-	configDir, err := getConfigDir()
+	configDir, err := GetConfigDir()
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func (s *Session) Save() error {
 
 // Load a session by ID
 func LoadSession(sessionID string) (*Session, error) {
-	configDir, err := getConfigDir()
+	configDir, err := GetConfigDir()
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func LoadSession(sessionID string) (*Session, error) {
 
 // Delete session by ID
 func DeleteSession(sessionID string) error {
-	configDir, err := getConfigDir()
+	configDir, err := GetConfigDir()
 	if err != nil {
 		return err
 	}
@@ -132,8 +132,8 @@ func (s *Session) MarkAsRunning() {
 	s.Status = StatusRunning
 }
 
-// Get ~/.resumex path
-func getConfigDir() (string, error) {
+// GetConfigDir returns the path to ~/.resumex
+func GetConfigDir() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
