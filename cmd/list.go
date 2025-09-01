@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"sort"
 	"text/tabwriter"
-	"time"
-
 	"github.com/spf13/cobra"
 	"github.com/Aliasgar-Jiwani/resumex/pkg/session"
 )
