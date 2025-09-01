@@ -3,9 +3,11 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
-	"github.com/spf13/cobra"
 	"github.com/Aliasgar-Jiwani/resumex/pkg/session"
+	"github.com/spf13/cobra"
 )
 
 var deleteCmd = &cobra.Command{
@@ -17,10 +19,17 @@ var deleteCmd = &cobra.Command{
 }
 
 func deleteCommand(cmd *cobra.Command, args []string) {
-	sessionID := args[0]
+	inputID := args[0]
+
+	// Find the full session ID (supports short IDs)
+	fullID, err := findFullSessionID(inputID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error finding session: %v\n", err)
+		os.Exit(1)
+	}
 
 	// Load session to get log file path
-	sess, err := session.LoadSession(sessionID)
+	sess, err := session.LoadSession(fullID)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error loading session: %v\n", err)
 		os.Exit(1)
@@ -34,12 +43,35 @@ func deleteCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Delete session file
-	if err := session.DeleteSession(sessionID); err != nil {
+	if err := session.DeleteSession(fullID); err != nil {
 		fmt.Fprintf(os.Stderr, "Error deleting session: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Session %s deleted successfully.\n", sessionID)
+	fmt.Printf("Session %s deleted successfully.\n", inputID)
+}
+
+// findFullSessionID finds the full UUID filename for a given short or full ID
+func findFullSessionID(shortID string) (string, error) {
+	configDir, err := session.GetConfigDir()
+	if err != nil {
+		return "", err
+	}
+
+	sessionsDir := filepath.Join(configDir, "sessions")
+	files, err := os.ReadDir(sessionsDir)
+	if err != nil {
+		return "", err
+	}
+
+	for _, file := range files {
+		name := file.Name()
+		if strings.HasPrefix(name, shortID) {
+			return strings.TrimSuffix(name, ".json"), nil
+		}
+	}
+
+	return "", fmt.Errorf("session with ID starting %s not found", shortID)
 }
 
 func init() {
